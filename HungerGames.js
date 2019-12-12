@@ -15,7 +15,7 @@ const WINNER = 'Winner';
 var Tribute = function() {
     this.name = '';
     this.killedBy = '';
-    this.victims = '';
+    this.victims = new Array();
 };
  
 Tribute.prototype = {
@@ -29,7 +29,6 @@ Tribute.prototype = {
     },
     
     addVictim: function(victim) {
-        if(this.victims === '') this.victims = new Array();
         if(victim !== '')
         this.victims.push(victim);
     },
@@ -39,12 +38,10 @@ Tribute.prototype = {
     },
     
     getKilledBy: function() {
-        if(this.killedBy === '') return WINNER;
         return this.killedBy;
     },
     
     getVictims: function() {
-        if(this.victims.length == 0) return NOKILLS;
         return this.victims.sort().join(', ');
     }
 };
@@ -61,25 +58,32 @@ HungerGamesResult.prototype = {
         this.tributes.push(tribute);
     },
     
-    getTribute: function(name){
-         return this.tributes.find(tribute => tribute.getName() == winner);
-    },
-    
-    updateTribute: function(name, killedByName, victimNames){
+    updateTribute: function(name, killedByName, victimName){
         var tributesLength = this.tributes.length;
-        var victims = victimNames.split(',').sort();
-        var victimsLength = victims.length;
-        console.error(name);
-        console.error(killedByName);
-        console.error(victimNames);
+        
         for (let i = 0; i < tributesLength; i++) {
             if(this.tributes[i].getName() == name){
                 
                 this.tributes[i].setKilledBy(killedByName);
-                
-                for(let j = 0; j < victimsLength; j++)
-                this.tributes[i].addVictim(victims[j]);
+                this.tributes[i].addVictim(victimName);
             }
+        }
+    },
+    
+    triggerWinner: function() {
+        var tributesLength = this.tributes.length;
+        for (let i = 0; i < tributesLength; i++) {
+            if(this.tributes[i].getKilledBy() === NOUPDATE)
+            this.tributes[i].setKilledBy(WINNER);
+        }
+        
+    },
+    
+    triggerWhoKilledNobody: function() {
+        var tributesLength = this.tributes.length;
+        for (let i = 0; i < tributesLength; i++) {
+            if(this.tributes[i].getVictims().length === 0)
+            this.tributes[i].addVictim(NOKILLS);
         }
     },
     
@@ -87,11 +91,34 @@ HungerGamesResult.prototype = {
         const figthers = roundResult.split(FIGHTERSEPARATOR);
         const winner = figthers[0].trim();
         const killed = figthers[1].trim();
-        this.updateTribute(winner,NOUPDATE,killed);
-        this.updateTribute(killed,winner,NOUPDATE);
+        var victims = killed.split(',').sort();
+        var victimsLength = victims.length;
+        
+        for(let i = 0; i < victimsLength; i++) {
+            this.updateTribute(winner,NOUPDATE,victims[i].trim());
+            this.updateTribute(victims[i].trim(),winner,NOUPDATE);
+        }
+    },
+    
+    getTribute: function(){
+         return this.tributes.find(tribute => tribute.getName() == winner);
     },
     
     resultsInText: function() {
+        this.sortTributes();
+        var tributesLength = this.tributes.length;
+        output = '';
+        for (let i = 0; i < tributesLength; i++) {
+            output += NAME + this.tributes[i].getName() + NEWLINE;
+            output += KILLED + this.tributes[i].getVictims() + NEWLINE;
+            output += KILLER + this.tributes[i].getKilledBy() + ((i != tributesLength-1) ? NEWLINE : '');
+            if(i != tributesLength-1)
+            output += NEWLINE;
+        }
+        return output;
+    },
+    
+    sortTributes: function() {
         this.tributes.sort(function (tribuneA,tribuneB) {
                 var nameA = tribuneA.getName().toUpperCase(); // ignore upper and lowercase
                 var nameB = tribuneB.getName().toUpperCase(); // ignore upper and lowercase
@@ -105,16 +132,6 @@ HungerGamesResult.prototype = {
                 // names must be equal
                 return 0;
         });
-        var tributesLength = this.tributes.length;
-        output = '';
-        for (let i = 0; i < tributesLength; i++) {
-            output += NAME + this.tributes[i].getName() + NEWLINE;
-            output += KILLED + this.tributes[i].getVictims() + NEWLINE;
-            output += KILLER + this.tributes[i].getKilledBy() + ((i != tributesLength-1) ? NEWLINE : '');
-            if(i != tributesLength-1)
-            output += NEWLINE;
-        }
-        return output;
     }
 };
 
@@ -132,6 +149,9 @@ for (let i = 0; i < numberOfTurns; i++) {
     hungerGames.processRound(info);
     console.error(info);
 }
+
+hungerGames.triggerWinner();
+hungerGames.triggerWhoKilledNobody();
 
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
