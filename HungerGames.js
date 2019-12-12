@@ -24,12 +24,12 @@ Tribute.prototype = {
     },
     
     setKilledBy: function(killedBy) {
-        if(killedBy !== '')
+        if(killedBy !== NOUPDATE)
         this.killedBy = killedBy;  
     },
     
     addVictim: function(victim) {
-        if(victim !== '')
+        if(victim !== NOUPDATE)
         this.victims.push(victim);
     },
     
@@ -59,23 +59,20 @@ HungerGamesResult.prototype = {
     },
     
     updateTribute: function(name, killedByName, victimName){
-        var tributesLength = this.tributes.length;
+        this.tributes
+            .find(tribute => tribute.getName() === name)
+            .setKilledBy(killedByName);
+            
+        this.tributes
+            .find(tribute => tribute.getName() === name)             
+            .addVictim(victimName);
         
-        for (let i = 0; i < tributesLength; i++) {
-            if(this.tributes[i].getName() == name){
-                
-                this.tributes[i].setKilledBy(killedByName);
-                this.tributes[i].addVictim(victimName);
-            }
-        }
     },
     
     triggerWinner: function() {
-        var tributesLength = this.tributes.length;
-        for (let i = 0; i < tributesLength; i++) {
-            if(this.tributes[i].getKilledBy() === NOUPDATE)
-            this.tributes[i].setKilledBy(WINNER);
-        }
+        this.tributes
+            .find(tribute => tribute.getKilledBy() === NOUPDATE)
+            .setKilledBy(WINNER);
         
     },
     
@@ -104,10 +101,10 @@ HungerGamesResult.prototype = {
          return this.tributes.find(tribute => tribute.getName() == winner);
     },
     
-    resultsInText: function() {
+    inText: function() {
         this.sortTributes();
         var tributesLength = this.tributes.length;
-        output = '';
+        output = NOUPDATE;
         for (let i = 0; i < tributesLength; i++) {
             output += NAME + this.tributes[i].getName() + NEWLINE;
             output += KILLED + this.tributes[i].getVictims() + NEWLINE;
@@ -135,25 +132,49 @@ HungerGamesResult.prototype = {
     }
 };
 
-const tributesNumber = parseInt(readline());
-var hungerGames = new HungerGamesResult();
-
-for (let i = 0; i < tributesNumber; i++) {
-    const playerName = readline();
-    hungerGames.addTribute(playerName);
-}
-const numberOfTurns = parseInt(readline());
-
-for (let i = 0; i < numberOfTurns; i++) {
-    const info = readline();
-    hungerGames.processRound(info);
-    console.error(info);
+var HungerGame = function () {
+    this.tributesNumber = 0;
+    this.numberOfTurns = 0;
+    this.result = new HungerGamesResult();
+    this.rounds = new Array();
 }
 
-hungerGames.triggerWinner();
-hungerGames.triggerWhoKilledNobody();
+HungerGame.prototype = {
+    
+    initializeGame: function() {
+        this.tributesNumber = parseInt(readline());
+
+        for (let i = 0; i < this.tributesNumber; i++) {
+            const playerName = readline();
+            this.result.addTribute(playerName);
+        }
+        this.numberOfTurns = parseInt(readline());
+        
+        for (let i = 0; i < this.numberOfTurns; i++) {
+            const info = readline();
+            this.rounds.push(info);
+            console.error(info);
+        }
+    },
+    
+    runGame: function() {
+        const roundNumbers = this.rounds.length;
+        for (let i = 0; i < roundNumbers; i++) {
+            this.result.processRound(this.rounds[i]);
+        }
+    }
+    
+}
+
+var hungerGame = new HungerGame();
+
+hungerGame.initializeGame();
+hungerGame.runGame();
+
+hungerGame.result.triggerWinner();
+hungerGame.result.triggerWhoKilledNobody();
 
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
 
-console.log(hungerGames.resultsInText());
+console.log(hungerGame.result.inText());
