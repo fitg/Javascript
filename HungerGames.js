@@ -13,8 +13,8 @@ const NEWLINE = '\n';
 const WINNER = 'Winner';
  
 var Tribute = function() {
-    this.name = '';
-    this.killedBy = '';
+    this.name = NOUPDATE;
+    this.killedBy = NOUPDATE;
     this.victims = new Array();
 };
  
@@ -101,7 +101,7 @@ HungerGamesResult.prototype = {
          return this.tributes.find(tribute => tribute.getName() == winner);
     },
     
-    inText: function() {
+    toText: function() {
         var tributesLength = this.tributes.length;
         output = NOUPDATE;
         for (let i = 0; i < tributesLength; i++) {
@@ -177,4 +177,4 @@ hungerGame.result.sortTributes();
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
 
-console.log(hungerGame.result.inText());
+console.log(hungerGame.result.toText());
