@@ -97,10 +97,6 @@ HungerGamesResult.prototype = {
         }
     },
     
-    getTribute: function(){
-         return this.tributes.find(tribute => tribute.getName() == winner);
-    },
-    
     toText: function() {
         var tributesLength = this.tributes.length;
         output = NOUPDATE;
