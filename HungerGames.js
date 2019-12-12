@@ -102,7 +102,6 @@ HungerGamesResult.prototype = {
     },
     
     inText: function() {
-        this.sortTributes();
         var tributesLength = this.tributes.length;
         output = NOUPDATE;
         for (let i = 0; i < tributesLength; i++) {
@@ -173,6 +172,7 @@ hungerGame.runGame();
 
 hungerGame.result.triggerWinner();
 hungerGame.result.triggerWhoKilledNobody();
+hungerGame.result.sortTributes();
 
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
