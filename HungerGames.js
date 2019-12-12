@@ -65,15 +65,20 @@ HungerGamesResult.prototype = {
          return this.tributes.find(tribute => tribute.getName() == winner);
     },
     
-    updateTribute: function(name, killedByName, victimName){
+    updateTribute: function(name, killedByName, victimNames){
         var tributesLength = this.tributes.length;
+        var victims = victimNames.split(',').sort();
+        var victimsLength = victims.length;
         console.error(name);
         console.error(killedByName);
-        console.error(victimName);
+        console.error(victimNames);
         for (let i = 0; i < tributesLength; i++) {
             if(this.tributes[i].getName() == name){
+                
                 this.tributes[i].setKilledBy(killedByName);
-                this.tributes[i].addVictim(victimName);
+                
+                for(let j = 0; j < victimsLength; j++)
+                this.tributes[i].addVictim(victims[j]);
             }
         }
     },
@@ -87,7 +92,19 @@ HungerGamesResult.prototype = {
     },
     
     resultsInText: function() {
-        this.tributes.sort();
+        this.tributes.sort(function (tribuneA,tribuneB) {
+                var nameA = tribuneA.getName().toUpperCase(); // ignore upper and lowercase
+                var nameB = tribuneB.getName().toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+                
+                // names must be equal
+                return 0;
+        });
         var tributesLength = this.tributes.length;
         output = '';
         for (let i = 0; i < tributesLength; i++) {
